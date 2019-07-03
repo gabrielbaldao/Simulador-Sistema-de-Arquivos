@@ -1,5 +1,11 @@
 package main;
 
+import arvore.Diretorio;
+import binary.Binario;
+import hardware.Abstracao;
+import hardware.Configuracao;
+import hardware.HardDisk;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -12,11 +18,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import arvore.Arquivo;
-import arvore.Diretorio;
-import binary.Binario;
-import hardware.Abstracao;
-import hardware.HardDisk;
-
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -24,413 +25,430 @@ import hardware.HardDisk;
 
 import operatingSystem.Kernel;
 
-public class MyKernel implements Kernel{
-
-	Diretorio raiz ;
+public class MyKernel implements Kernel {
+	private HardDisk hd;
+	Diretorio raiz;
 	Diretorio atual;
-	Diretorio nulo;
-	HardDisk hd ;
-	public MyKernel(HardDisk hd){
-		this.hd = hd;
-		raiz = setRaiz();
-		
-//		System.out.println(Abstracao.diretorioToBinario(raiz, hd));
-//		Abstracao.blocoToDir(hd, Abstracao.diretorioToBinario(raiz, hd).toString());
 
-		nulo = new Diretorio(null,"nulo");
-		
-		setAtual(raiz);
+	public MyKernel(HardDisk hd) {
+		this.hd = hd;
+		this.raiz = setRaiz();
+
 	}
-	/**/
+
 	public String ls(String parameters) {
-		//variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
+		// variavel result deverah conter o que vai ser impresso na tela apos comando do
+		// usuário
 		String result = "";
 		System.out.println("Chamada de Sistema: ls");
 		System.out.println("\tParametros: " + parameters);
 
-		//inicio da implementacao do aluno
-		parameters.replace(" ", "");
-		if(parameters.equals("-l"))
-		{
-			result = getAtual().imprimeInfo();
-		}
-		else
-			result =buscaParametro(parameters).imprime();// getAtual().imprime();
+		// inicio da implementacao do aluno
+		if(parameters.equals(""))
+			result = blocoAtual();
+		if (parameters.contains("-l")) {
+			// imprimeFilhos(Abstracao.getFilhos(hd.blocoToString(buscaParametro(parameters.split("
+			// ")[1]).getPonteiro()), hd));
+			System.out.println("teste\t " + parameters.replace("-l", "") + "\n"
+					+ buscaParametro(parameters.replace("-l", "")).getPonteiro());
+			result = imprimeFilhosInfo(Abstracao.getFilhos(
+					hd.blocoToString(buscaParametro(parameters.replace("-l", "").trim()).getPonteiro()), hd));
 
-		//fim da implementacao do aluno
+		} else
+			{
+			result = imprimeFilhos(Abstracao.getFilhos(hd.blocoToString(buscaParametro(parameters).getPonteiro()), hd));
+			}
+
+		// fim da implementacao do aluno
 
 		return result;
 	}
 
 	public String mkdir(String parameters) {
-
-		//variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
+		// variavel result deverah conter o que vai ser impresso na tela apos comando do
+		// usuário
 		String result = "";
 		System.out.println("Chamada de Sistema: mkdir");
 		System.out.println("\tParametros: " + parameters);
+		novoDiretorio(parameters);
 
-		Date data = new Date();
-
-		
-
-
-		//   atual.addDiretorio(novoDiretorio);
-		//		if(buscaFilhos(parameters, novo))
-		String[] diretorios = parameters.split("/");
-		
-		String endereco = parameters.substring(0,parameters.length()-diretorios[diretorios.length-1].length());
-		Diretorio dest = buscaParametro(endereco);
-		if(dest!=null)
-		{
-			if(!Naoencontrou && !containsDiretorio(buscaParametro(parameters.substring(0,parameters.length()-diretorios[diretorios.length-1].length())), diretorios[diretorios.length-1]))
-			{
-				Diretorio novoDiretorio = novoDiretorio(parameters);
-				buscaParametro(endereco).addDiretorio(novoDiretorio);
-				System.out.println("end -"+endereco);
-			System.out.println("BUSCA PELO HD >"+hd.buscaParametro(endereco).getNome()+"< diselegante");
-				//Abstracao.diretorioToBinario(novoDiretorio, hd);
-			String ponteiroBin = Binario.intToBinaryString(Integer.parseInt(novoDiretorio.getPonteiro()),64);
-			int ponteiroPai = Integer.parseInt(buscaParametro(endereco).getPonteiro());
-			hd.setBloco(Abstracao.setFilho(ponteiroBin,hd ,ponteiroPai), ponteiroPai);
-			System.out.println("Tamanho filho "+Abstracao.blocoToDir(hd, hd.blocoToString(0)).getFilhos().size());
-			}
-			else result = "Diretorio nao foi criado";
-		}
-		else result = "Caminho inexistente";
-		/**
-		 * LEMBRA DISSO EM CREATEFILE 
-		 * ****/
-		//inicio da implementacao do alunoas
-
-		//fim da implementacao do aluno
+		// System.out.println("Resultado da busca
+		// "+buscaParametro(parameters).getNome());
+		// Diretorio dir = new Diretorio(dirRaiz(),"Teste");
+		// dir.setPonteiro(hd.buscaEsetaPosicao());
+		// hd.setBloco(Abstracao.diretorioToBinario(dir, hd), dir.getPonteiro());
+		// System.out.println("Mkdir pai "+ dir.getPai().getPonteiro()+"\t");
+		// hd.setBloco(Abstracao.alteraFilho(hd.blocoToString(dir.getPai().getPonteiro()),
+		// Binario.intToBinaryString(dir.getPonteiro(),Configuracao.getEndereco()),
+		// hd),dir.getPai().getPonteiro());
+		//
 
 		return result;
 	}
+
 	public String cd(String parameters) {
-		//variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
+		// variavel result deverah conter o que vai ser impresso na tela apos comando do
+		// usuário
 		String result = "";
+		String currentDir = "";
 		System.out.println("Chamada de Sistema: cd");
 		System.out.println("\tParametros: " + parameters);
 
-		//inicio da implementacao do aluno
-		Diretorio atualAux = buscaParametro(parameters);
-		Diretorio atualAux2 = hd.buscaParametro(parameters);
-		hd.setAtual(Integer.parseInt(atualAux2.getPonteiro()));
-		if(atualAux != null)
-			setAtual(atualAux);
-		else result = "Diretorio invalido";
+		// inicio da implementacao do aluno
 
+		// indique o diretório atual. Por exemplo... /
+		currentDir = "/";
+		hd.setAtual(buscaParametro(parameters).getPonteiro());
 
-		//setando parte gráfica do diretorio atual
-		operatingSystem.fileSystem.FileSytemSimulator.currentDir = current(getAtual());
+		// setando parte gráfica do diretorio atual
+		operatingSystem.fileSystem.FileSytemSimulator.currentDir =caminho(dirAtual().getPonteiro());
 
-		//		if(encontrou)
-		//			result ="Diretório "+ parameters+ "  não existe";
-
-		//fim da implementacao do aluno
+		// fim da implementacao do aluno
 
 		return result;
 	}
 
 	public String rmdir(String parameters) {
-		//variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
+		// variavel result deverah conter o que vai ser impresso na tela apos comando do
+		// usuário
 		String result = "";
 		System.out.println("Chamada de Sistema: rmdir");
 		System.out.println("\tParametros: " + parameters);
 
-		//inicio da implementacao do aluno
-		String[] diretorios = parameters.split("/");
-		String nome = diretorios[diretorios.length-1];
-		Diretorio aux = buscaParametro(parameters.substring(0,parameters.length()-diretorios[diretorios.length-1].length()));
-		for(int i=0;i<aux.getFilhos().size();i++)
-		{
-			if(aux.getFilhos().get(i).getNome().equals(nome))
+		// inicio da implementacao do aluno
+		if (hd.blocoToString(buscaParametro(parameters).getPonteiro()).charAt(0) == '0'
+				&& Abstracao.getConteudoBloco(hd.blocoToString(buscaParametro(parameters).getPonteiro()))
+						.contains(Abstracao.completaTamanho("", Configuracao.getConteudoBlocoA()))) {
+			int posicao = buscaParametro(parameters).getPai().getPonteiro();
 
-			{
-				if(aux.getFilhos().get(i).getFilhos().isEmpty() && aux.getFilhos().get(i).getArquivos().isEmpty())
-				{
-					//result = aux.getNome()+" removido com sucesso";
-					aux.getFilhos().remove(i);
+			String aux = Abstracao.zeraFilho(hd.blocoToString(posicao),
+					Binario.intToBinaryString(buscaParametro(parameters).getPonteiro()), hd);
 
-				}
-				else result = "Diretorio nao vazio, diretorio nao excluido";
-			}
-		}
-		//fim da implementacao do aluno
+			hd.setBloco(Abstracao.setConteudo(hd.blocoToString(posicao), aux), posicao);
+			hd.setBloco(Abstracao.completaTamanho("", Configuracao.getTamBloco()), posicao);
+			hd.setBitDaPosicao(false, posicao);
+		} else
+			result = "Diretorio nao encontrado ou nao vazio";
+		// fim da implementacao do aluno
 
 		return result;
 	}
 
 	public String cp(String parameters) {
-		//variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
+		// variavel result deverah conter o que vai ser impresso na tela apos comando do
+		// usuário
 		String result = "";
 		System.out.println("Chamada de Sistema: cp");
 		System.out.println("\tParametros: " + parameters);
 
+		// inicio da implementacao do aluno
 		String[] auxParametros = parameters.split(" ");
+		if(!auxParametros[0].contains(".txt"))
+		{
+		//auxParametros[0].replace(".txt", "");
 
-		if(auxParametros[0].contains(".txt")) {
-			String[] parametro = parameters.split(" ");
-			String[] caminho = parametro[0].split("/");			
-			String nome = caminho[caminho.length-1].substring(0, caminho[caminho.length-1].length()-4);
-			String tipo = caminho[caminho.length-1].substring( caminho[caminho.length-1].length()-3, caminho[caminho.length-1].length());
-			String conteudo = parametro[parametro.length-1];
-			System.out.println("Nome "+nome);
-			System.out.println("Tipo "+tipo);
-			System.out.println("Conteudo "+conteudo);
-			System.out.println("Caminho ");
-			Diretorio dir = buscaParametro(auxParametros[0].substring(0, auxParametros[0].length()-(nome.length()+3)));
-
-			for(int i=0;i<dir.getArquivos().size();i++)
-			{
-				if(dir.getArquivos().get(i).getNome().equals(nome))
-				{
-					buscaParametro(auxParametros[1]).addArquivo(dir.getArquivos().get(i));
-				}
-			}
-		}
-		else {
-
-			Naoencontrou = false;
-			/***ESSE AUX TA COM OS PARAMETROS ERRADODS****/
-			Diretorio origem = buscaParametro(auxParametros[0]);			
-			Diretorio destino = buscaParametro(auxParametros[1]);
-			destino.getFilhos().add(origem);
-
-
+		String novoBloco = hd.blocoToString(buscaParametro(auxParametros[0]).getPonteiro());
+		String blocoDestino = Abstracao.alteraPai(novoBloco, buscaParametro(auxParametros[1]).getPonteiro());
+		int novoEndereco = hd.buscaEsetaPosicao();
+		blocoDestino = Abstracao.alteraPonteiro(blocoDestino, novoEndereco);
+		hd.setBloco(blocoDestino, novoEndereco);
+		hd.setBloco(Abstracao.alteraFilho(hd.blocoToString( buscaParametro(auxParametros[1]).getPonteiro()), Binario.intToBinaryString(novoEndereco), hd),buscaParametro(auxParametros[1]).getPonteiro());
+		
+		
+		
+		//hd.setBloco(Abstracao.diretorioToBinario(novoDiretorio, hd), novoDiretorio.getPonteiro());
+		// fim da implementacao do aluno
 		}
 		return result;
 	}
 
 	public String mv(String parameters) {
-		//variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
+		// variavel result deverah conter o que vai ser impresso na tela apos comando dobuscaParametro(auxParametros[1]).getPonteiro()
+		// usuário
 		String result = "";
 		System.out.println("Chamada de Sistema: mv");
 		System.out.println("\tParametros: " + parameters);
 
-		//inicio da implementacao do aluno
+		// inicio da implementacao do aluno
 		String[] auxParametros = parameters.split(" ");
+		auxParametros[0].replace(".txt", "");
+		if(!auxParametros[0].contains(".txt"))
+		{
+			String novoBloco = Abstracao.alteraPai(hd.blocoToString(buscaParametro(auxParametros[0]).getPonteiro()),
+					(buscaParametro(auxParametros[1]).getPonteiro()));
+			hd.setBloco(novoBloco, buscaParametro(auxParametros[0]).getPonteiro());
+		}
+		else 
+		{
+			String[] aux = parameters.split("/");
+			String nomeA = aux[aux.length - 1];
+			int posicao = buscaParametro(auxParametros[0].substring(0, auxParametros[0].length() - nomeA.length())).getPai()
+					.getPonteiro();
+			ArrayList<Integer> filhos = Abstracao.getFilhos(hd.blocoToString(posicao), hd);
 
-		if(auxParametros[0].contains(".txt")) {
-			String[] parametro = parameters.split(" ");
-			String[] caminho = parametro[0].split("/");			
-			String nome = caminho[caminho.length-1].substring(0, caminho[caminho.length-1].length()-4);
-			String tipo = caminho[caminho.length-1].substring( caminho[caminho.length-1].length()-3, caminho[caminho.length-1].length());
-			String conteudo = parametro[parametro.length-1];
-			System.out.println("Nome "+nome);
-			System.out.println("Tipo "+tipo);
-			System.out.println("Conteudo "+conteudo);
-			System.out.println("Caminho ");
-			Diretorio dir = buscaParametro(auxParametros[0].substring(0, auxParametros[0].length()-(nome.length()+3)));
+			for (int i = 0; i < filhos.size(); i++) {
+				String nome = Binario.binarioToString(Abstracao.getNomeBloco(hd.blocoToString(filhos.get(i))));
+				if (nome.equals(nomeA)) {
 
-			for(int i=0;i<dir.getArquivos().size();i++)
-			{
-				if(dir.getArquivos().get(i).getNome().equals(nome))
-				{
-					buscaParametro(auxParametros[1]).addArquivo(dir.getArquivos().get(i));
-				}
-			}
-			for (int i = 0; i <dir.getPai().getArquivos().size(); i++) {
-				if(dir.getPai().getArquivos().get(i).getNome().equals(nome))
-				{
-					dir.getPai().getArquivos().remove(i);
-				}
+					int pos = Binario.binaryStringToInt(Abstracao.getEnderecoBloco(hd.blocoToString(filhos.get(i))));
+					String novoBloco = Abstracao.alteraPai(hd.blocoToString(pos),
+							(buscaParametro(auxParametros[1]).getPonteiro()));
+					hd.setBloco(novoBloco, buscaParametro(auxParametros[1]).getPonteiro());
+		
+		}
+		// fim da implementacao do aluno
 			}
 		}
-		else {
-
-			Naoencontrou = false;
-			/***ESSE AUX TA COM OS PARAMETROS ERRADODS****/
-			Diretorio origem = buscaParametro(auxParametros[0]);
-			Diretorio destino = buscaParametro(auxParametros[1]);
-			destino.getFilhos().add(origem);
-			for(int i=0;i<origem.getPai().getFilhos().size();i++)
-			{
-				if(origem.getPai().getFilhos().get(i).getNome().equals(origem.getNome()))
-					origem.getPai().getFilhos().remove(i);
-			}
-
-
-
-		}
-		//fim da implementacao do aluno
-
 		return result;
 	}
 
 	public String rm(String parameters) {
-		//variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
+		// variavel result deverah conter o que vai ser impresso na tela apos comando do
+		// usuário
 		String result = "";
 		System.out.println("Chamada de Sistema: rm");
 		System.out.println("\tParametros: " + parameters);
-		String[] auxParametros = parameters.split(" ");
-		for (String k : auxParametros) {
-			System.out.println(k+"<-");
-		}
-		//inicio da implementacao do aluno
-		if(parameters.contains(".txt")) {
-			String[] parametro = parameters.split(" ");
-			String[] caminho = parametro[0].split("/");			
-			String nome = caminho[caminho.length-1].substring(0, caminho[caminho.length-1].length()-4);
-			String tipo = caminho[caminho.length-1].substring( caminho[caminho.length-1].length()-3, caminho[caminho.length-1].length());
-			String conteudo = parametro[parametro.length-1];
-			String caminhoArquivo = parametro[0].substring(0, parametro[0].length()-(nome.length()+1+tipo.length()));
-			System.out.println("Nome "+nome);
-			System.out.println("Tipo "+tipo);
-			System.out.println("Conteudo "+conteudo);
-			System.out.println("Caminho "+ caminhoArquivo);
-			Diretorio dir = buscaParametro(caminhoArquivo);
-			for(int i=0;i<dir.getArquivos().size();i++)
+
+		// inicio da implementacao do aluno
+		System.out.println("e para remover "+buscaParametro(parameters).getNome());
+		if(true/*!buscaParametro(parameters).getNome().equals("raiz")*/)
+		{	
+		if (!parameters.contains(".txt")) {
+			
+			int posicao = buscaParametro(parameters).getPai().getPonteiro();
+			if(posicao !=0)
 			{
-				if(dir.getArquivos().get(i).getNome().equals(nome))
-					dir.getArquivos().remove(i);
+			String aux = Abstracao.zeraFilho(hd.blocoToString(posicao),
+					Binario.intToBinaryString(buscaParametro(parameters).getPonteiro()), hd);
+
+			hd.setBloco(Abstracao.setConteudo(hd.blocoToString(posicao), aux), posicao);
+			hd.setBloco(Abstracao.completaTamanho("", Configuracao.getTamBloco()), posicao);
+			hd.setBitDaPosicao(false, posicao);
 			}
-		}
-		else {
-			Diretorio diretorio = buscaParametro(auxParametros[auxParametros.length-1]);
-			String[] diretorios = auxParametros[auxParametros.length-1].split("/");
-			String nome = diretorios[diretorios.length-1];
-			Diretorio aux = buscaParametro(auxParametros[auxParametros.length-1].substring(0,auxParametros[auxParametros.length-1].length()-diretorios[diretorios.length-1].length()));
+		} else {
+			String[] aux = parameters.split("/");
+			
+			String nomeA = aux[aux.length - 1];
+			int posicao = buscaParametro(parameters.substring(0, parameters.length() - nomeA.length())).getPai()
+					.getPonteiro();
+		
+		
+			
+			System.err.println("apagou " + posicao);
+			ArrayList<Integer> filhos = Abstracao.getFilhos(hd.blocoToString(posicao), hd);
 
+			for (int i = 0; i < filhos.size(); i++) {
+				String nome = Binario.binarioToString(Abstracao.getNomeBloco(hd.blocoToString(filhos.get(i))));
+				if (nome.equals(nomeA)) {
 
-			for(int i=0;i<aux.getFilhos().size();i++)
-			{
-				if(aux.getFilhos().get(i).getNome().equals(nome))
-
-				{
-					aux.getFilhos().remove(i);
-					//	result = aux.getNome()+" removido com sucesso";
+					int pos = Binario.binaryStringToInt(Abstracao.getEnderecoBloco(hd.blocoToString(filhos.get(i))));
+					String auxA = Abstracao.zeraFilho(hd.blocoToString(posicao),
+							Binario.intToBinaryString(
+									buscaParametro(parameters.substring(0, parameters.length() - nomeA.length()))
+											.getPonteiro()),
+							hd);
+				//	System.out.println("desse tamanho "+);
+					hd.setBloco(Abstracao.setConteudo(hd.blocoToString(posicao), auxA), posicao);
+					hd.setBloco(Abstracao.completaTamanho("", Configuracao.getTamBloco()), pos);
+					hd.setBitDaPosicao(false, pos);
+					i = filhos.size();
 
 				}
-			}
-		}
-		//fim da implementacao do aluno
 
+			
+			
+			}
+		
+		}
+		// String[] parametros = parameters.split("/");
+		// Diretorio dir =
+		// buscaParametro(parameters.substring(0,parametros[parametros.length-1].length()));
+		//
+		// if(parametros[parametros.length-1].contains(".txt"))
+		// {
+		// dir.setArquivos(Abstracao.apagaArq(dir.getArquivos(),
+		// parametros[parametros.length-1],hd));
+		// }
+		// else {
+		// dir.setFilhos(Abstracao.apagaFilho(dir.getFilhos(),
+		// parametros[parametros.length-1],hd));
+		// }
+		// hd.setBloco(Abstracao.diretorioToBinario(dir, hd), dir.getPonteiro());
+
+		// fim da implementacao do aluno
+		}
 		return result;
 	}
 
 	public String chmod(String parameters) {
-		//variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
+		// variavel result deverah conter o que vai ser impresso na tela apos comando do
+		// usuário
 		String result = "";
 		System.out.println("Chamada de Sistema: chmod");
 		System.out.println("\tParametros: " + parameters);
 
-		//inicio da implementacao do aluno
+		// inicio da implementacao do aluno
 
-		//fim da implementacao do aluno
+		// fim da implementacao do aluno
 
 		return result;
 	}
 
 	public String createfile(String parameters) {
-		//variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
+		// variavel result deverah conter o que vai ser impresso na tela apos comando do
+		// usuário
 		String result = "";
 		System.out.println("Chamada de Sistema: createfile");
 		System.out.println("\tParametros: " + parameters);
 
-		//inicio da implementacao do aluno
+		// inicio da implementacao do aluno
+		novoArquivo(parameters);
 
-		Arquivo novoArquivo = novoArquivo(parameters);
-		String[] parametro = parameters.split(" ");
-		String caminhoArquivo = parametro[0].substring(0, parametro[0].length()-(novoArquivo.getNome().length()+1+novoArquivo.getTipo().length()));
-
-		if(!Naoencontrou && !containsArq(buscaParametro(caminhoArquivo), novoArquivo.getNome()))
-		{
-			novoArquivo.setPonteiro(String.valueOf(hd.buscaEsetaPosicao()));
-			hd.setBloco(Abstracao.arquivoToBinario(novoArquivo, hd), Integer.parseInt(novoArquivo.getPonteiro()));
-			buscaParametro(caminhoArquivo).addArquivo(novoArquivo);
-		}
-		else result = "Arquivo nao foi criado";
-		//	Arquivo novoArquivo = new Arquivo(caminho[caminho.length-1].substring(0, caminho[caminho.length-1].length()-4),caminho[caminho.length-1].substring( caminho[caminho.length-1].length()-3, caminho[caminho.length-1].length()),parametro[parametro.length-1]);
-		//	novoArquivo.setData(String.valueOf(monthToString(data.getMonth()+1))+" "+String.valueOf(data.getDate())+" "+String.valueOf(data.getHours())+":"+String.valueOf(data.getMinutes()));
-		//	buscaParametro(caminho[caminho.length-1]).addArquivo(novoArquivo);
-		//fim da implementacao do aluno
+		// fim da implementacao do aluno
 
 		return result;
 	}
 
 	public String cat(String parameters) {
+		// variavel result deverah conter o que vai ser impresso na tela apos comando do
+		// usuário
 		String result = "";
 		System.out.println("Chamada de Sistema: cat");
 		System.out.println("\tParametros: " + parameters);
-		String caminho[] = parameters.split("/");
-		Naoencontrou = false;
-		boolean arqExist = false;
-		Diretorio aux = buscaParametro(parameters.substring(0,parameters.length()-caminho[caminho.length-1].length()));
-		if(!Naoencontrou)
-			for(int i=0;i<aux.getArquivos().size();i++)
-			{
-				if(	aux.getArquivos().get(i).getNome().equals(caminho[caminho.length-1].substring(0, caminho[caminho.length-1].length()-4)))
-				{
-					arqExist = true;
-					result = "\n" +aux.getArquivos().get(i).getConteudo();
+		String[] parametro = parameters.split("/");
+
+		// inicio da implementacao do aluno
+
+		ArrayList<Integer> arqs = buscaArquivo(parameters);
+		if (arqs.size() > 0) {
+			for (int i = 0; i < arqs.size(); i++) {
+				System.out.println("ARQS " + arqs.size());
+				String nomeArquivo = Binario.binarioToString(Abstracao.getNomeBloco(hd.blocoToString(arqs.get(i))));
+				System.out.println("NOME QUE TEM " + nomeArquivo);
+				if (nomeArquivo.equals(parametro[parametro.length - 1])) {
+					result = Binario
+							.binarioToString(Abstracao.completaTamanho("", Configuracao.getCompletaConteudoBinario())
+									+ Abstracao.getConteudoBloco(hd.blocoToString(arqs.get(i))));
+					i = arqs.size();
 				}
 			}
-		else result = "Caminho nao encontrado";
-		if (!arqExist) {
-			result = "Arquivo nao encontrado";
-		}
+		} else
+			result = "cat: Arquivo nao existe";
+		// fim da implementacao do aluno
+
 		return result;
-	}    
+	}
+
+	private ArrayList<Integer> buscaArquivo(String parametro) {
+		String[] aux = parametro.split("/");
+
+		Diretorio dir = buscaParametro(parametro.substring(0, parametro.length() - aux[aux.length - 1].length()));
+		String arquivos = Abstracao.getConteudoBloco(hd.blocoToString(dir.getPonteiro()));
+
+		return Abstracao.converteArquivos(arquivos, hd);
+	}
 
 	public String batch(String parameters) {
-		//variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
+		// variavel result deverah conter o que vai ser impresso na tela apos comando do
+		// usuário
 		String result = "";
 		System.out.println("Chamada de Sistema: batch");
 		System.out.println("\tParametros: " + parameters);
-		hd.imprimeOcupados();
-		//inicio da implementacao do aluno
+		System.out.println(parameters);
+		// inicio da implementacao do aluno
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(parameters));
+			while (br.ready()) {
+				String linha = br.readLine();
+				System.err.println(linha);
+				if (linha.contains("mkdir")) {
+					mkdir(linha.replace("mkdir", "").trim());
+				}
+				if (linha.contains("createfile")) {
+					createfile(linha.replace("createfile", "").trim());
+				}
+				if (linha.contains("cd")) {
+					cd(linha.replace("cd", "").trim());
+				}
+				if (linha.contains("rmdir")) {
+					rmdir(linha.replace("rmdir", "").trim());
+				}
+				if (linha.contains("rm")) {
+					System.out.println("REMOVE");
+					if(!linha.contains("rm -r"))
+					rm(linha.replace("rm", "").trim());
+				}
+				if (linha.contains("chmod")) {
+				//	chmod(linha.replace("chmod", "").trim());
+				}
+				if (linha.contains("cp")) {
+				//	cp(linha.replace("cp", "").trim());
+				}
+				if (linha.contains("mv")) {
+					//mv(linha.replace("mv", "").trim());
+				}
+				if (linha.contains("dump")) {
+					dump(linha.replace("dump", "").trim());
+				}
+				System.out.println(linha);
+			}
+			br.close();
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
 
-		//fim da implementacao do aluno
+		// fim da implementacao do aluno
 
 		return result;
 	}
 
 	public String dump(String parameters) {
-		//variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
+		// variavel result deverah conter o que vai ser impresso na tela apos comando do
+		// usuário
 		String result = "";
 		System.out.println("Chamada de Sistema: dump");
 		System.out.println("\tParametros: " + parameters);
 
-		//inicio da implementacao do aluno
-		System.out.println();
-		File arq = new File("/home/gabriel/Documentos/dump.txt");
+		// inicio da implementacao do aluno
+		System.out.println("CHEGOU ");
+		File arq = new File(parameters);
+		System.err.println("caminho \n\n\n\n\n\n\n grava");
 		try {
-			if(!arq.exists())
+			if (!arq.exists())
 				arq.delete();
 			arq.createNewFile();
-			//			{
+			// {
 			System.out.println("Vai gravar");
 			arq.createNewFile();
 			BufferedWriter bufW = new BufferedWriter(new FileWriter(arq));
-			
 
-				bufW.write(recursaoDumpArq( raiz).replaceAll("//", "/"));
-				bufW.newLine();
-			
+			// bufW.write(recursaoDumpArq( ).replaceAll("//", "/"));
+			bufW.write(recDump());
+			bufW.newLine();
+
 			bufW.close();
-			//			}
-		}
-		catch (Exception e) {
+			// }
+		} catch (Exception e) {
 			// TODO: handle exception
 		}
-		//fim da implementacao do aluno
+		// fim da implementacao do aluno
 
 		return result;
 	}
 
 	public String info() {
-		//variavel result deverah conter o que vai ser impresso na tela apos comando do usuário
+		// variavel result deverah conter o que vai ser impresso na tela apos comando do
+		// usuário
 		String result = "";
 		System.out.println("Chamada de Sistema: info");
-		System.out.println("\tParametros: sem parametros" );
+		System.out.println("\tParametros: sem parametros");
 
-		//nome do aluno
-		String name = "Gabriel de Carvalho Baldão";
-		//numero de matricula
+		// nome do aluno
+		String name = "Gabriel de Carvalho Baldao";
+		// numero de matricula
 		String registration = "14152000441";
-		//versao do sistema de arquivos
-		String version = "0.1";
+		// versao do sistema de arquivos
+		String version = "2.3";
 
 		result += "Nome do Aluno:        " + name;
 		result += "\nMatricula do Aluno:   " + registration;
@@ -438,102 +456,227 @@ public class MyKernel implements Kernel{
 
 		return result;
 	}
-	/*************************************************************************************************************/
-	public void setAtual(Diretorio atual)
-	{
-		this.atual = atual;
-		System.err.println("\t\t\tAtual\t"+this.atual.getNome());
 
+	/*************************************************************************************/
+
+	public String recDump() {
+		StringBuilder str = new StringBuilder();
+		for (int i = 1; i < hd.getBlocos(); i++) {
+			if (hd.getBitDaPosicao(i)) {
+				if (hd.blocoToString(i).charAt(0) == '0') {
+					str.append("mkdir /" + caminho(i) + "\n");
+				} else {
+					String conteudo = Binario
+							.binarioToString(Abstracao.completaTamanho("", Configuracao.getCompletaConteudoBinario())
+									+ Abstracao.getConteudoBloco(hd.blocoToString(i)));
+					str.append("createfile /" + caminho(i) + " " + conteudo + "\n");
+				}
+			}
+
+		}
+		return str.toString();
 	}
-	public Diretorio getAtual() {
-		return this.atual;
+
+	public String caminho(int indice) {
+		if (Binario.binaryStringToInt(Abstracao.getPaiBloco(hd.blocoToString(indice))) != 0) {
+			return (caminho(Binario.binaryStringToInt(Abstracao.getPaiBloco(hd.blocoToString(indice)))) + "/"
+					+ Binario.binarioToString(Abstracao.getNomeBloco(hd.blocoToString(indice))));
+		}
+
+		return Binario.binarioToString(Abstracao.getNomeBloco(hd.blocoToString(indice)));
 	}
-	
-	public Diretorio buscaParametro(String parametro)
-	{
+
+	public String imprimeFilhos(ArrayList<Integer> filhos) {
+		StringBuilder str = new StringBuilder();
+		System.out.println("tamanho filhos");
+		for (int i = 0; i < filhos.size(); i++) {
+			if (hd.getBitDaPosicao(filhos.get(i))) {
+				str.append(Binario.binarioToString(Abstracao.getNomeBloco(hd.blocoToString(filhos.get(i)))));
+
+				str.append("\n");
+			}
+		}
+		return str.toString();
+	}
+
+	public String imprimeFilhosInfo(ArrayList<Integer> filhos) {
+		StringBuilder str = new StringBuilder();
+		for (int i = 0; i < filhos.size(); i++) {
+			if (hd.getBitDaPosicao(filhos.get(i))) {
+
+				String bloco = hd.blocoToString(filhos.get(i));
+				String data = monthToString(Binario.binaryStringToInt(Abstracao.getMesBloco(bloco))) + " "
+						+ Binario.binaryStringToInt(Abstracao.getDiaBloco(bloco)) + " "
+						+ Binario.binaryStringToInt(Abstracao.getHoraBloco(bloco)) + ":"
+						+ Binario.binaryStringToInt(Abstracao.getMinutoBloco(bloco)) + " ";
+
+				String nome = Binario.binarioToString(Abstracao.getNomeBloco(bloco));
+				str.append(data + " " + nome);
+
+				str.append("\n");
+
+			}
+		}
+		return str.toString();
+	}
+
+	private String blocoAtual() {
+		return hd.blocoToString(hd.getAtual());
+	}
+
+	private String blocoRaiz() {
+		return hd.blocoToString(hd.getRaiz());
+	}
+
+	private Diretorio dirAtual() {
+		return Abstracao.blocoToDir(hd, blocoAtual());
+	}
+
+	private Diretorio dirRaiz() {
+		return Abstracao.blocoToDir(hd, blocoRaiz());
+	}
+
+	public Diretorio buscaParametro(String parametro) {
 
 		String[] aux = parametro.split("/");
-
-		if(parametro.equals(""))
-			return getAtual();
-		if(parametro.charAt(0)== '/')
-		{
-			//System.out.println("\n\n\t\tRAIZ");
-			return buscaDiretorio(raiz, aux, 1);
+		if (parametro.equals(""))
+			return dirAtual();
+		if (parametro.charAt(0) == '/') {
+			// System.out.println("\n\n\t\tRAIZ");
+			return buscaDiretorio(dirRaiz(), aux, 1);
+		} else {
+			return buscaDiretorio(dirAtual(), aux, 0);
 		}
-		else {
-			return buscaDiretorio(getAtual(), aux, 0);
-		}
-
 	}
-	static boolean Naoencontrou = false;
-	public Diretorio buscaDiretorio(Diretorio atual,String[] parametro, int j)
-	{
 
+	private String getBlocoHD(int endereco) {
+		return hd.blocoToString(endereco);
+	}
 
-		//		if(parametro[j].equals("..") || parametro[j].equals(".") )
-		if(parametro.length>j) {
-			//System.out.println(parametro[j]);
-			if(parametro[j].compareTo("..") == 0)
-			{
-				return buscaDiretorio(atual.getPai(), parametro, ++j);
+	private Diretorio dirNoHd(int endereco) {
+		return Abstracao.blocoToDir(hd, getBlocoHD(endereco));
+	}
+
+	private Diretorio buscaDiretorio(Diretorio diretorio, String[] parametro, int j) {
+
+		if (j < parametro.length) {
+			if (parametro[j].equals("..")) {
+				if (diretorio.getPonteiro() == diretorio.getPai().getPonteiro())
+					return buscaDiretorio(dirNoHd(0), parametro, ++j);
+				return buscaDiretorio(dirNoHd(diretorio.getPai().getPonteiro()), parametro, ++j);
 			}
-			if(parametro[j].compareTo(".")==0)
-				return buscaDiretorio(atual, parametro, ++j);
-			for (int i = 0; i < atual.getFilhos().size(); i++) {
-				if(atual.getFilhos().get(i).getNome().compareTo(parametro[j])==0)
-				{
-					if(j == parametro.length-1)
-					{
-						return atual.getFilhos().get(i);
-					}
-					else
-					{
-						return buscaDiretorio(atual.getFilhos().get(i), parametro, ++j);
+			if (parametro[j].equals(".")) {
+				return buscaDiretorio(dirNoHd(diretorio.getPonteiro()), parametro, ++j);
+			}
+			ArrayList<Integer> filhos = Abstracao.getFilhos(hd.blocoToString(diretorio.getPonteiro()), hd);
+			if (filhos.size() > 0)
+				for (int i = 0; i < filhos.size(); i++) {
+					if (Binario.binarioToString(Abstracao.getNomeBloco(hd.blocoToString(filhos.get(i))))
+							.equals(parametro[j])) {
+
+						if (j == parametro.length - 1) {
+							return Abstracao.blocoToDir(hd, hd.blocoToString(filhos.get(i)));
+						} else
+							return buscaDiretorio(Abstracao.blocoToDir(hd, hd.blocoToString(filhos.get(i))), parametro,
+									++j);
+
 					}
 				}
 
+		}
+		return diretorio;
+	}
+
+	private Diretorio novoDiretorio(String parameters) {
+
+		String[] diretorios = parameters.split("/");
+		String caminho = parameters.substring(0, parameters.length() - diretorios[diretorios.length - 1].length());
+		if (!Abstracao.contemFilho(hd.blocoToString(buscaParametro(caminho).getPonteiro()),
+				diretorios[diretorios.length - 1], hd)) {
+			Diretorio pai = buscaParametro(caminho);
+			if(pai.getFilhos().size()+pai.getArquivos().size() < Configuracao.getQntdFilhos())
+			{
+			Diretorio novoDiretorio = new Diretorio(pai, diretorios[diretorios.length - 1]);
+			novoDiretorio.setPonteiro(hd.buscaEsetaPosicao());
+			// System.out.println("bit "+novoDiretorio.getPonteiro());
+			novoDiretorio.setPermissao("777");
+			setHora(novoDiretorio);
+			hd.setBloco(Abstracao.diretorioToBinario(novoDiretorio, hd), novoDiretorio.getPonteiro());
+			hd.setBloco(
+					Abstracao.alteraFilho(hd.blocoToString(novoDiretorio.getPai().getPonteiro()),
+							Binario.intToBinaryString(novoDiretorio.getPonteiro(), Configuracao.getEndereco()), hd),
+					novoDiretorio.getPai().getPonteiro());
+
+			return novoDiretorio;
 			}
 		}
-		Naoencontrou = true;
-		//return atual;
-		return atual;
+		return null;
 	}
-	public boolean buscaFilhos(String parametro,String novo)
-	{
-		Diretorio aux = buscaParametro(parametro);
-		for (int i = 0; i <aux.getFilhos().size(); i++) {
-			if(aux.getFilhos().get(i).getNome().equals(novo))
-				return true;
 
-		}
-		return false;
-	}
-	String caminhoTerminal;
-	public String caminho(Diretorio diretorio)
-	{
-		ArrayList<String> diretorios = new ArrayList<String>();
-		caminhoRecursao(diretorios, diretorio);
-		String result = "";
-		for(int i=diretorios.size();i<0;i--)
-			result = result +"/"+ diretorios.get(i);
-		return result;
-	}
-	public String caminhoRecursao(ArrayList<String> diretorios, Diretorio diretorio)
-	{
-		if(diretorio.getNome().equals("raiz"))
-		{
+	private Arquivo novoArquivo(String parameters) {
+		System.out.println(parameters);
+		String[] parametro = parameters.split(" ");
+		String[] caminho = parametro[0].split("/");
+		Date data = new Date();
 
-			return caminhoTerminal;
-		}
-		else {
-			diretorios.add(diretorio.getNome());
-			return caminhoRecursao(diretorios, diretorio.getPai());
-		}
+		String nome = caminho[caminho.length - 1].substring(0, caminho[caminho.length - 1].length() - 4);
+		String tipo = caminho[caminho.length - 1].substring(caminho[caminho.length - 1].length() - 3,
+				caminho[caminho.length - 1].length());
+		String conteudo = parametro[parametro.length - 1];
+		String caminhoArquivo = parametro[0].substring(0, parametro[0].length() - (nome.length() + 1 + tipo.length()));
+
+		System.out.println("Nome " + nome);
+		System.out.println("Tipo " + tipo);
+		System.out.println("Conteudo " + conteudo);
+		System.out.println("Caminho " + caminhoArquivo);
+
+		Arquivo novoArquivo = new Arquivo(caminho[caminho.length - 1], tipo, conteudo, buscaParametro(caminhoArquivo),
+				String.valueOf(monthToString(data.getMonth() + 1)) + " " + String.valueOf(data.getDate()) + " "
+						+ String.valueOf(data.getHours()) + ":" + String.valueOf(data.getMinutes()));
+		setHora(novoArquivo);
+		novoArquivo.setPonteiro(hd.buscaEsetaPosicao());
+		novoArquivo.setPermissao("777");
+		setHora(novoArquivo);
+		novoArquivo.setPai(buscaParametro(caminhoArquivo));
+		System.out.println("Arquivo tem ponteiro " + novoArquivo.getPonteiro());
+
+		hd.setBloco(
+				Abstracao.alteraFilho(hd.blocoToString(novoArquivo.getPai().getPonteiro()),
+						Binario.intToBinaryString(novoArquivo.getPonteiro(), Configuracao.getEndereco()), hd),
+				novoArquivo.getPai().getPonteiro());
+
+		hd.setBloco(Abstracao.arquivoToBinario(novoArquivo, hd), novoArquivo.getPonteiro());
+
+		return novoArquivo;
 	}
+
+	public void setHora(Diretorio dir) {
+		Date data = new Date();
+
+		dir.setData(String.valueOf(monthToString(data.getMonth() + 1)) + " " + String.valueOf(data.getDate()) + " "
+				+ String.valueOf(data.getHours()) + ":" + String.valueOf(data.getMinutes()));
+		// String endereco =
+		// parameters.substring(0,parameters.length()-diretorios[diretorios.length-1].length());
+		dir.setMes(data.getMonth() + 1);
+		dir.setDia(data.getDate());
+		dir.setHora(data.getHours());
+		dir.setMin(data.getMinutes());
+	}
+
+	public void setHora(Arquivo arq) {
+		Date data = new Date();
+		arq.setData(String.valueOf(monthToString(data.getMonth() + 1)) + " " + String.valueOf(data.getDate()) + " "
+				+ String.valueOf(data.getHours()) + ":" + String.valueOf(data.getMinutes()));
+		// String endereco =
+		// parameters.substring(0,parameters.length()-diretorios[diretorios.length-1].length());
+		arq.setMes(data.getMonth() + 1);
+		arq.setDia(data.getDate());
+		arq.setHora(data.getHours());
+		arq.setMin(data.getMinutes());
+	}
+
 	public String monthToString(int mes) {
-		switch (mes)
-		{
+		switch (mes) {
 		case 1:
 			return "Jan";
 		case 2:
@@ -551,7 +694,7 @@ public class MyKernel implements Kernel{
 		case 8:
 			return "Aug";
 		case 9:
-			return "Set";	
+			return "Set";
 		case 10:
 			return "Out";
 		case 11:
@@ -559,165 +702,22 @@ public class MyKernel implements Kernel{
 		case 12:
 			return "Dez";
 
-
 		}
 		return "";
 	}
-	public  String current(Diretorio dir)
-	{
-		if(!dir.getNome().equals("raiz"))
-		{
-			return( current(dir.getPai()) +"/"+ dir.getNome());
-		}
-		return "";
-	}
-	public boolean containsDiretorio(Diretorio dir, String nome)
-	{
-		for (int i = 0; i < dir.getFilhos().size(); i++) {
-			if(dir.getFilhos().get(i).getNome().equals(nome))
-				return true;
-		}
-		return false;
-	}
-	public boolean containsArq(Diretorio dir, String nome)
-	{
-		for (int i = 0; i < dir.getArquivos().size(); i++) {
-			if(dir.getArquivos().get(i).getNome().equals(nome))
-				return true;
-		}
-		return false;
-	}
-	public boolean setHorario(Diretorio dir, String data)
-	{
-		if(dir.getNome().equals("raiz"))
-		{dir.setData(data);
-		return true;
-		}
-		else {
-			dir.setData(data);
-			return setHorario(dir.getPai(), data);
-		}
-	}
-	public String recursaoDumpDir(Diretorio dir)
-	{
-		if(dir.getFilhos().isEmpty()) {
-			return "";
-		}
-		else {
 
-			for(int i = 0; i < dir.getFilhos().size();i++)
-			{
-				return( "mkdir "+ current(dir.getFilhos().get(i))+"\n"+ recursaoDumpDir(dir.getFilhos().get(i)));
-			}
-			return "";
-		}
-
-	}
-	/**********************************************************************/
-	public String recursaoDumpArq( Diretorio dir)
-	{
-		String aux = "";
-		//System.out.println("nem aqui");
-		for (int i = 0; i < dir.getArquivos().size(); i++) 
-			aux = aux + ("createfile /"+current(dir)+"/"+dir.getArquivos().get(i).getNome()+"."
-					+dir.getArquivos().get(i).getTipo()+" "+dir.getArquivos().get(i).getConteudo())+"\n";
-
-
-		String filhos = aux;
-		for(int i = 0; i < dir.getFilhos().size();i++)
-			filhos =( filhos +("mkdir /"+ current(dir.getFilhos().get(i))+"\n"+ recursaoDumpArq(dir.getFilhos().get(i))));
-
-		return filhos;
-	}
-	public Diretorio copy(Diretorio dir)
-	{
-		Diretorio novo = new Diretorio(dir.getPai(), dir.getNome());
-		novo.setArquivos(dir.getArquivos());
-		novo.setData(dir.getData());
-		novo.setFilhos(dir.getFilhos());
-		novo.setPermissao(dir.getPermissao());
-		return novo;
-	}
-	public Arquivo copy(Arquivo arq)
-	{
-		Arquivo novo = new Arquivo(arq.getNome(), arq.getTipo(), arq.getConteudo(), arq.getPai(), arq.getData());
-		novo.setPermissao(arq.getPermissao());
-		novo.setPonteiro(String.valueOf(hd.buscaEsetaPosicao()));
-		return novo;
-	}
-	public Diretorio novoDiretorio(String parameters)
-	{
-		System.out.println(parameters);
+	public Diretorio setRaiz() {
 		Date data = new Date();
-		String[] diretorios = parameters.split("/");
-		Naoencontrou = false;
-		Diretorio novoDiretorio = new Diretorio(buscaParametro(parameters.substring(0,parameters.length()-diretorios[diretorios.length-1].length())),diretorios[diretorios.length-1]);
-		novoDiretorio.setPonteiro(String.valueOf(hd.buscaEsetaPosicao()));
-		//System.out.println("bit "+novoDiretorio.getPonteiro());
-		setHora(novoDiretorio);
-		hd.setBloco(Abstracao.diretorioToBinario(novoDiretorio, hd), Integer.parseInt(novoDiretorio.getPonteiro()));
-		return novoDiretorio;
-	}
-	public Diretorio setRaiz() 
-	{
-		Date data = new Date();
-		Diretorio novaRaiz = new Diretorio(null,"raiz");
+		Diretorio novaRaiz = new Diretorio(null, "raiz");
 		novaRaiz.setPermissao("777");
-		
-		novaRaiz.setPonteiro(String.valueOf(hd.buscaEsetaPosicao()));
-		
+
+		novaRaiz.setPonteiro(hd.buscaEsetaPosicao());
+
 		setHora(novaRaiz);
-		hd.setBloco(Abstracao.diretorioToBinario(novaRaiz, hd), Integer.parseInt(novaRaiz.getPonteiro()));
-		System.out.println(hd.blocoToString(0));
+		hd.setBloco(Abstracao.diretorioToBinario(novaRaiz, hd), novaRaiz.getPonteiro());
+		// hd.setBloco(Abstracao.diretorioToBinario(novaRaiz, hd),
+		// (novaRaiz.getPonteiro()));
 		return novaRaiz;
-		
-	}
-	public void setHora(Diretorio dir)
-	{
-		Date data = new Date();
-		dir.setData(String.valueOf(monthToString(data.getMonth()+1))+" "+String.valueOf(data.getDate())+" "+String.valueOf(data.getHours())+":"+String.valueOf(data.getMinutes()));
-		//	String endereco = parameters.substring(0,parameters.length()-diretorios[diretorios.length-1].length());
-		dir.setMes(data.getMonth()+1);
-		dir.setDia(data.getDate());
-		dir.setHora(data.getHours());
-		dir.setMin(data.getMinutes());
-	}
-	public void setHora(Arquivo arq)
-	{
-		Date data = new Date();
-		arq.setData(String.valueOf(monthToString(data.getMonth()+1))+" "+String.valueOf(data.getDate())+" "+String.valueOf(data.getHours())+":"+String.valueOf(data.getMinutes()));
-		//	String endereco = parameters.substring(0,parameters.length()-diretorios[diretorios.length-1].length());
-		arq.setMes(data.getMonth()+1);
-		arq.setDia(data.getDate());
-		arq.setHora(data.getHours());
-		arq.setMin(data.getMinutes());
-	}
-	public Arquivo novoArquivo(String parameters)
-	{
-		System.out.println(parameters);
-		String[] parametro = parameters.split(" ");
-		String[] caminho = parametro[0].split("/");
-		Date data = new Date();
 
-		String nome = caminho[caminho.length-1].substring(0, caminho[caminho.length-1].length()-4);
-		String tipo = caminho[caminho.length-1].substring( caminho[caminho.length-1].length()-3, caminho[caminho.length-1].length());
-		String conteudo = parametro[parametro.length-1];
-		String caminhoArquivo = parametro[0].substring(0, parametro[0].length()-(nome.length()+1+tipo.length()));
-		System.out.println("Nome "+nome);
-		System.out.println("Tipo "+tipo);
-		System.out.println("Conteudo "+conteudo);
-		System.out.println("Caminho "+ caminhoArquivo);
-		Naoencontrou = false;
-	
-		Arquivo novoArquivo = new Arquivo(nome, tipo, conteudo, buscaParametro(caminhoArquivo), String.valueOf(monthToString(data.getMonth()+1))+" "+String.valueOf(data.getDate())+" "+String.valueOf(data.getHours())+":"+String.valueOf(data.getMinutes()));
-		setHora(novoArquivo);
-		novoArquivo.setPermissao("777");
-		setHora(novoArquivo);
-			hd.imprimeOcupados();
-		return novoArquivo;
 	}
-
 }
-
-
-

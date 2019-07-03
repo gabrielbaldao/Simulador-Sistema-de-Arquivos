@@ -1,6 +1,9 @@
 package operatingSystem.fileSystem;
 
 import java.awt.event.KeyEvent;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import operatingSystem.Kernel;
 
 public class FileSytemSimulator extends javax.swing.JFrame {
@@ -17,7 +20,7 @@ public class FileSytemSimulator extends javax.swing.JFrame {
         }
         else{
             this.myKernel = myKernel;
-            this.base = "baldao@ifsuldeminas:";
+            this.base = "aluno@localhost:";
             this.escreverDiretorio();
         }
 
@@ -49,7 +52,12 @@ public class FileSytemSimulator extends javax.swing.JFrame {
         txtCommand.setSelectedTextColor(new java.awt.Color(255, 255, 255));
         txtCommand.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
-                txtCommandKeyPressed(evt);
+                try {
+					txtCommandKeyPressed(evt);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
             }
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 txtCommandKeyReleased(evt);
@@ -85,7 +93,7 @@ public class FileSytemSimulator extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void txtCommandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtCommandKeyPressed
+    private void txtCommandKeyPressed(java.awt.event.KeyEvent evt) throws FileNotFoundException, IOException {//GEN-FIRST:event_txtCommandKeyPressed
         if(evt.getKeyCode() == KeyEvent.VK_ENTER){
             String command = this.txtCommand.getText();
             this.adicionarAreaDeTexto(this.txtCommand.getText());
@@ -130,7 +138,7 @@ public class FileSytemSimulator extends javax.swing.JFrame {
     private javax.swing.JTextField txtCommand;
     // End of variables declaration//GEN-END:variables
 
-    private void dispararComando( String comando ){
+    private void dispararComando( String comando ) throws FileNotFoundException, IOException{
         //se algum comando for dado
         if( !comando.trim().equals("") ){
             String args[] = comando.split(" ");

@@ -5,6 +5,9 @@
 
 package operatingSystem;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 /**
  * Classe de Interface que define as chamadas de sistema para gerenciamento do
  * sistema de arquivos.
@@ -85,8 +88,10 @@ public interface Kernel {
      * Funcao para rodar um arquivo de lote.
      * @param parameters Parametros recebidos no terminal.
      * @return String que é impressa no terminal.
+     * @throws FileNotFoundException 
+     * @throws IOException 
      */
-    public String batch(String parameters);
+    public String batch(String parameters) throws FileNotFoundException, IOException;
 
     /**
      * Funcao para gerar dump do Sistema de Arquivos.

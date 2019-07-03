@@ -10,7 +10,13 @@ public class Diretorio {
 	private Diretorio self;
 	private String permissao;
 	private String data;
-	private String ponteiro;
+	private Integer ponteiro;
+	public void setPonteiro(Integer ponteiro) {
+		this.ponteiro = ponteiro;
+	}
+	public Integer getPonteiro() {
+		return ponteiro;
+	}
 	private int mes,dia,hora,min;
 	public int getMes() {
 		return mes;
@@ -43,11 +49,12 @@ public class Diretorio {
 		setArquivos(new ArrayList<Arquivo>());
 		if(pai == null)
 		{
+			
 			this.setPai(this);
 		}
 		else this.setPai(pai);
 		this.setSelf(this);
-
+		
 	}
 	public void addDiretorio(Diretorio novo) 
 	{
@@ -131,8 +138,9 @@ public class Diretorio {
 	}
 	public String imprimeInfo() {
 		String result = "";
+		System.out.println("AQUI"+filhos.size());
 		for(int i=0;i<this.filhos.size();i++)
-			result = result + "\n"+filhos.get(i).getData()+"\t"+filhos.get(i).getNome()+"" ;
+			result = result + "\n"+filhos.get(i).getPonteiro()+"\t"+filhos.get(i).getNome()+"" ;
 		for(int j=0;j<this.arquivos.size();j++)
 			result = result + "\n"+arquivos.get(j).getData()+"\t"+arquivos.get(j).getNome()+"."+arquivos.get(j).getTipo() ;
 		return result;
@@ -174,16 +182,12 @@ public class Diretorio {
 		}
 		return false;
 	}
-	public String getPonteiro() {
-		return ponteiro;
-	}
-	public void setPonteiro(String ponteiro) {
-		this.ponteiro = ponteiro;
-	}
+
 	public void imprimeDir()
 	{
 		System.out.println("\n Funcao imprime Nome "+this.nome+"\n"+
-							"Ponteiro "+this.ponteiro+"\n"
+							"Ponteiro "+this.ponteiro+"\npai"+
+				this.getPai().getNome()+"\nendereco pai "+this.getPai().getPonteiro()
 								);
 	}
 }

@@ -4,11 +4,7 @@ import java.util.*;
 
 import javax.management.StringValueExp;
 
-/**
- * Responsavel por algumas conversoes binárias
- * 
- * @author douglas
- */
+
 public class Binario {
 
 	// Using int value 0-15 as index, yields equivalent hex digit as char.
@@ -624,9 +620,9 @@ public class Binario {
 			}
 			binary.append(' ');
 		}
-		System.out.println(binary.toString() + "binario oficial" + binary.toString().length());
 		return binary.toString().replaceAll(" ", "");
 	}
+
 
 	public static String binarioToString(String binario) {
 		StringBuilder str = new StringBuilder();
@@ -640,6 +636,7 @@ public class Binario {
 				n = (char) Integer.parseInt("00000000");
 				if(c != n)
 				{
+					
 					str.append( (char) Integer.parseInt(valor, 2));
 				}
 				
@@ -647,7 +644,7 @@ public class Binario {
 				break;
 
 		}
-		
+		//System.out.println(str);
 		return str.toString();
 	}
 	

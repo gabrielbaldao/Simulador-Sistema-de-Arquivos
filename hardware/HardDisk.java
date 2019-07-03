@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 
 package hardware;
 
@@ -10,10 +6,7 @@ import arvore.Arquivo;
 import arvore.Diretorio;
 import binary.Binario;
 
-/**
- *
- * @author douglas
- */
+
 public class HardDisk {
     
     private boolean hardDisk[];
@@ -21,7 +14,7 @@ public class HardDisk {
     private Integer enderecamentoTamanho;
     private Integer tamanhoDoBloco = 512;
     private Integer listaDeBlocos;
-    private Integer atual;
+    private Integer atual=0;
     private Integer raiz = 0;
     public HardDisk (Integer tamanhoDaMemoriaSecundaria){
         this.numeroDeBits = tamanhoDaMemoriaSecundaria * 8 * 1024 * 1024;
@@ -32,7 +25,10 @@ public class HardDisk {
        // System.out.println("Numero de Bits\t"+numeroDeBits+"\n quantos blocos "+enderecamentoTamanho);
         inicializarMemoriaSecundaria();
     }
-    
+    public int getBlocos()
+    {
+    	return enderecamentoTamanho;
+    }
     public void inicializarMemoriaSecundaria (){
         for (int i = 0; i < numeroDeBits; i++) {
         
@@ -113,8 +109,7 @@ public class HardDisk {
 			   setBitDaPosicao(false, i);
 			   }
 		   }
-		   System.out.println("Possivel nome "+this.blocoToString(blocoPosicao).substring(66,162));
-		  System.out.println("---"+Binario.binarioToString(this.blocoToString(blocoPosicao).substring(66,162)));
+		 
 		   return true;
 	   }
 	   else return false;
@@ -137,7 +132,7 @@ public class HardDisk {
     	setBitDaPosicao(true, pos);
     	return pos;
     }
-    private void setBitDaPosicao (boolean bit, int posicao){
+    public void setBitDaPosicao (boolean bit, int posicao){
         this.hardDisk[posicao] = bit;
     }
     
@@ -172,57 +167,8 @@ public class HardDisk {
     	
     	return ((numeroDeBits)/512)*pos+enderecamentoTamanho;
     }
-    public Diretorio buscaParametro(String parametro)
-    {
 
-		String[] aux = parametro.split("/");
-		System.out.println(getAtual()+"Teste "+Abstracao.blocoToDir(this, this.blocoToString(getAtual())).getNome());
-		if(parametro.equals(""))
-			return Abstracao.blocoToDir(this, this.blocoToString(getAtual()));
-		if(parametro.charAt(0)== '/')
-		{
-			System.out.println("\n\n\t\tRAIZ");
-			return buscaDiretorio(Abstracao.blocoToDir(this, this.blocoToString(getRaiz())), aux, 1);
-		}
-		else {
-			return buscaDiretorio(Abstracao.blocoToDir(this, this.blocoToString(getAtual())), aux, 0);
-		}
-    }
-    static boolean Naoencontrou = false;
-	public Diretorio buscaDiretorio(Diretorio atual,String[] parametro, int j)
-	{
-
-		System.out.println("Entrou busca diretorio\n"+
-						"Diretorio >"+atual.getFilhos().size()+"<");
-		//		if(parametro[j].equals("..") || parametro[j].equals(".") )
-		if(parametro.length>j) {
-			//System.out.println(parametro[j]);
-			if(parametro[j].compareTo("..") == 0)
-			{
-				return buscaDiretorio(atual.getPai(), parametro, ++j);
-			}
-			if(parametro[j].compareTo(".")==0)
-				return buscaDiretorio(atual, parametro, ++j);
-			for (int i = 0; i < atual.getFilhos().size(); i++) {
-				if(atual.getFilhos().get(i).getNome().compareTo(parametro[j])==0)
-				{
-					if(j == parametro.length-1)
-					{
-						System.out.println("Encontrou");
-						return atual.getFilhos().get(i);
-					}
-					else
-					{
-						return buscaDiretorio(atual.getFilhos().get(i), parametro, ++j);
-					}
-				}
-
-			}
-		}
-		Naoencontrou = true;
-		//return atual;
-		return atual;
-	}
+   
 	public Integer getAtual() {
 		return atual;
 	}

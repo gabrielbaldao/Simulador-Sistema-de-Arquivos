@@ -7,7 +7,7 @@ public class Arquivo {
 	private String permissao;
 	private String data;
 	private Diretorio pai;
-	private String ponteiro;
+	private Integer ponteiro;
 	private int mes,dia,hora,min;
 	public int getMes() {
 		return mes;
@@ -70,10 +70,10 @@ public class Arquivo {
 	public void setData(String data) {
 		this.data = data;
 	}
-	public String getPonteiro() {
+	public 	Integer getPonteiro() {
 		return ponteiro;
 	}
-	public void setPonteiro(String ponteiro) {
+	public void setPonteiro(Integer ponteiro) {
 		this.ponteiro = ponteiro;
 	}
 	public Diretorio getPai() {
